@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form.io Builder</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.form.io/formiojs/formio.full.min.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+      #builder {
+        height: 100vh;
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="builder"></div>
+
+    <script src="https://cdn.form.io/formiojs/formio.full.min.js"></script>
+    <script>
+      let builder;
+      let initialSchema = { display: "form" };
+
+      // Initialize the builder
+      function initBuilder(schema) {
+        if (builder) {
+          builder.form = schema;
+        } else {
+          Formio.builder(document.getElementById("builder"), schema, {
+            noDefaultSubmitButton: true,
+          }).then(function (instance) {
+            builder = instance;
+
+            // Listen for changes and send to parent
+            builder.on("change", function (event) {
+              sendSchemaToParent();
+            });
+          });
+        }
+      }
+
+      // Send schema to parent window
+      function sendSchemaToParent() {
+        if (builder && window.parent) {
+          const schema = builder.schema;
+          window.parent.postMessage(
+            {
+              type: "formio-schema-change",
+              schema: schema,
+            },
+            "*"
+          );
+        }
+      }
+
+      // Listen for messages from parent
+      window.addEventListener("message", function (event) {
+        if (event.data.type === "formio-init") {
+          initialSchema = event.data.schema || { display: "form" };
+          initBuilder(initialSchema);
+        } else if (event.data.type === "formio-get-schema") {
+          sendSchemaToParent();
+        }
+      });
+
+      // Notify parent that iframe is ready
+      window.parent.postMessage({ type: "formio-ready" }, "*");
+    </script>
+  </body>
+</html>

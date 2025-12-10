@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form.io Builder</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.form.io/formiojs/formio.full.min.css"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background-color: #fff;
+        overflow: auto;
+      }
+      #formio {
+        min-height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="formio"></div>
+    <script src="https://cdn.form.io/formiojs/formio.full.min.js"></script>
+    <script>
+      let formInstance = null;
+
+      window.addEventListener("message", function (event) {
+        const data = event.data;
+
+        if (data && data.type === "renderForm" && data.schema) {
+          const schema =
+            typeof data.schema === "string"
+              ? JSON.parse(data.schema)
+              : data.schema;
+
+          document.getElementById("formio").innerHTML = "";
+
+          Formio.createForm(document.getElementById("formio"), schema).then(
+            function (form) {
+              formInstance = form;
+
+              form.on("change", function (changed) {
+                if (changed.data) {
+                  window.parent.postMessage(
+                    {
+                      type: "formChange",
+                      data: changed.data,
+                      isValid: form.checkValidity(changed.data, true),
+                    },
+                    "*"
+                  );
+                }
+              });
+
+              form.on("submit", function (submission) {
+                window.parent.postMessage(
+                  { type: "formSubmission", submission: submission },
+                  "*"
+                );
+              });
+            }
+          );
+        }
+      });
+
+      // Notify parent that we are ready
+      window.parent.postMessage({ type: "rendererReady" }, "*");
+    </script>
+  </body>
+</html>
