@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "./axios-instance";
 
 export interface Patient {
-  id: string;
+  patientId: string;
   name: string;
   email: string;
   phone: string;
@@ -10,7 +10,15 @@ export interface Patient {
   updatedAt?: string;
 }
 
+export interface CreatePatientRequest {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export const usePatientService = () => {
+  const queryClient = useQueryClient();
+
   const getPatientById = (id: string | undefined) => {
     return useQuery({
       queryKey: ["patient", id],
@@ -23,7 +31,37 @@ export const usePatientService = () => {
     });
   };
 
+  const searchPatients = (keyword: string) => {
+    return useQuery({
+      queryKey: ["patients", keyword],
+      queryFn: async () => {
+        const response = await axiosInstance.get<Patient[]>(`/patient`);
+        const patients = response.data;
+
+        return patients.filter(
+          (patient) =>
+            patient.name.toLowerCase().includes(keyword.toLowerCase()) ||
+            patient.email.toLowerCase().includes(keyword.toLowerCase()) ||
+            patient.phone.toLowerCase().includes(keyword.toLowerCase())
+        );
+      },
+      enabled: !!keyword,
+    });
+  };
+
+  const createPatient = useMutation({
+    mutationFn: (data: CreatePatientRequest) =>
+      axiosInstance
+        .post<string>("/patient", data)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
+    },
+  });
+
   return {
     getPatientById,
+    searchPatients,
+    createPatient,
   };
 };

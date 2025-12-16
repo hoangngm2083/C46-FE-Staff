@@ -24,6 +24,7 @@ import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import useStaffService from "../../services/staffService";
 import useMedicalPackageService from "../../services/medicalPackageService";
 import useAuthService from "@/services/authService";
+import toast from "react-hot-toast";
 
 type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
@@ -46,7 +47,7 @@ export default function Admin() {
     useState<Department | null>(null);
   const [selectedMedicalPackage, setSelectedMedicalPackage] =
     useState<IMedicalPackage | null>(null);
-  const [selectedMedicalService, _setSelectedMedicalService] =
+  const [selectedMedicalService, setSelectedMedicalService] =
     useState<MedicalServiceDTO | null>(null);
   const [showMedicalPackageDetail, setShowMedicalPackageDetail] =
     useState(false);
@@ -81,10 +82,6 @@ export default function Admin() {
         : { page: 1 },
   });
 
-  // Fetch medical packages and services
-  const [currentMedicalServiceId, setCurrentMedicalServiceId] = useState<
-    string | null
-  >(null);
   const {
     medicalPackages,
     medicalPackage,
@@ -114,7 +111,7 @@ export default function Admin() {
           }
         : { page: 1 },
     medicalPackageId: selectedMedicalPackageId,
-    medicalServiceId: currentMedicalServiceId ?? undefined,
+    medicalServiceId: selectedMedicalService?.medicalServiceId ?? undefined,
   });
 
   // Form state for create/edit staff
@@ -144,7 +141,7 @@ export default function Admin() {
       name: "",
       description: "",
       serviceIds: [],
-      price: 0,
+      price: null,
       image: "",
     });
 
@@ -167,8 +164,9 @@ export default function Admin() {
       setShowCreateModal(false);
       resetStaffForm();
       staffs.refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating staff:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi tạo nhân viên");
     }
   };
 
@@ -193,8 +191,11 @@ export default function Admin() {
       setSelectedStaff(null);
       resetStaffForm();
       staffs.refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating staff:", error);
+      toast.error(
+        error.response?.data?.message || "Lỗi khi cập nhật nhân viên"
+      );
     }
   };
 
@@ -264,7 +265,7 @@ export default function Admin() {
       name: "",
       description: "",
       serviceIds: [],
-      price: 0,
+      price: null,
       image: "",
     });
   };
@@ -310,7 +311,7 @@ export default function Admin() {
         updateMedicalPackagePrice.mutateAsync({
           id: selectedMedicalPackage.medicalPackageId,
           request: {
-            price: medicalPackageFormData.price,
+            price: medicalPackageFormData.price ?? 0,
           },
         }),
       ]);
@@ -382,7 +383,7 @@ export default function Admin() {
         selectedMedicalService.medicalServiceId
       );
       setShowDeleteModal(false);
-      setCurrentMedicalServiceId(null);
+      setSelectedMedicalService(null);
 
       medicalServices.refetch();
     } catch (error) {
@@ -431,7 +432,7 @@ export default function Admin() {
     setMedicalPackageFormData({
       name: pkg.name,
       description: pkg.description,
-      price: pkg.price,
+      price: pkg.price ?? null,
       image: pkg.image || "",
       serviceIds: pkg.services?.map((s) => s.medicalServiceId) || [],
     });
@@ -454,7 +455,7 @@ export default function Admin() {
   };
 
   const openEditMedicalServiceModal = async (service: MedicalServiceDTO) => {
-    setCurrentMedicalServiceId(service.medicalServiceId);
+    setSelectedMedicalService(service);
     try {
       const serviceDetail = await getMedicalService(service.medicalServiceId);
       setMedicalServiceFormData({
@@ -471,7 +472,7 @@ export default function Admin() {
   };
 
   const openDeleteMedicalServiceModal = (service: MedicalServiceDTO) => {
-    setCurrentMedicalServiceId(service.medicalServiceId);
+    setSelectedMedicalService(service);
     setShowDeleteModal(true);
   };
 
@@ -980,13 +981,13 @@ export default function Admin() {
           />
 
           <MedicalServiceFormModal
-            isOpen={showEditModal && !!currentMedicalServiceId}
+            isOpen={showEditModal && !!selectedMedicalService}
             title="Chỉnh sửa dịch vụ"
             formData={medicalServiceFormData}
             isSubmitting={updateMedicalService.isPending}
             onClose={() => {
               setShowEditModal(false);
-              setCurrentMedicalServiceId(null);
+              setSelectedMedicalService(null);
               resetMedicalServiceForm();
             }}
             onSubmit={handleUpdateMedicalService}
@@ -1000,7 +1001,7 @@ export default function Admin() {
             onConfirm={handleDeleteMedicalService}
             onCancel={() => {
               setShowDeleteModal(false);
-              setCurrentMedicalServiceId(null);
+              setSelectedMedicalService(null);
             }}
           />
         </>

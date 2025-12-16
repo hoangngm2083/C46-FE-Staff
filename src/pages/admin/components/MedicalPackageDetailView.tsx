@@ -2,6 +2,7 @@ import { ArrowLeft, Plus, X } from "lucide-react";
 import { useState } from "react";
 import useBookingService from "@/services/bookingService";
 import { format, isSameDay } from "date-fns";
+import toast from "react-hot-toast";
 
 interface MedicalPackageDetailViewProps {
   packageData: MedicalPackageDetailDTO;
@@ -110,7 +111,7 @@ export default function MedicalPackageDetailView({
         });
       } else {
         await createSlot.mutateAsync({
-          date: format(selectedDate, 'yyyy-MM-dd'),
+          date: format(selectedDate, "yyyy-MM-dd"),
           shift: slotFormData.shift,
           medicalPackageId: packageData.medicalPackageId,
           maxQuantity: slotFormData.maxQuantity,
@@ -121,8 +122,9 @@ export default function MedicalPackageDetailView({
       setSelectedDate(null);
       setEditingSlot(null);
       slots.refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving slot:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi lưu slot");
     }
   };
 
@@ -176,7 +178,9 @@ export default function MedicalPackageDetailView({
                 {new Intl.NumberFormat("vi-VN", {
                   style: "currency",
                   currency: "VND",
-                }).format(packageData.price)}
+                }).format(
+                  Number(packageData.price ?? packageData.prices["1"] ?? 0)
+                )}
               </p>
             </div>
 
@@ -371,8 +375,12 @@ export default function MedicalPackageDetailView({
                   className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                 >
-                  <option className="text-black" value={0}>Sáng</option>
-                  <option className="text-black" value={1}>Chiều</option>
+                  <option className="text-black" value={0}>
+                    Sáng
+                  </option>
+                  <option className="text-black" value={1}>
+                    Chiều
+                  </option>
                 </select>
               </div>
 

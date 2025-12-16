@@ -1,12 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import LogoutButton from "../../components/LogoutButton";
-import {
-  Bell,
-  CalendarCheck,
-  Calendar,
-  DollarSign,
-} from "lucide-react";
+import { Bell, CalendarCheck, Calendar, DollarSign } from "lucide-react";
 import useAuthService from "@/services/authService";
 import useStaffService from "@/services/staffService";
 
@@ -17,15 +12,22 @@ export default function Receptionist() {
   const [todayAppointments] = useState(0);
   const [totalAppointments] = useState(0);
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
       {/* Header */}
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-cyan-400" />
+            <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center overflow-hidden">
+              {staff.data?.image ? (
+                <img
+                  src={staff.data.image}
+                  alt={staff.data.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Bell className="w-6 h-6 text-cyan-400" />
+              )}
             </div>
             <div>
               <h1 className="text-xl font-bold">

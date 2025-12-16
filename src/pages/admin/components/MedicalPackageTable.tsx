@@ -22,10 +22,7 @@ export default function MedicalPackageTable({
     );
   }
 
-  if (
-    !packagesQuery.data?.content ||
-    packagesQuery.data.content.length === 0
-  ) {
+  if (!packagesQuery.data?.content || packagesQuery.data.content.length === 0) {
     return (
       <div className="text-center py-12">
         <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
@@ -39,6 +36,9 @@ export default function MedicalPackageTable({
       <table className="w-full">
         <thead>
           <tr className="border-b border-white/10">
+            <th className="text-left py-3 px-4 text-slate-400 font-medium">
+              Ảnh
+            </th>
             <th className="text-left py-3 px-4 text-slate-400 font-medium">
               Tên gói
             </th>
@@ -60,12 +60,22 @@ export default function MedicalPackageTable({
               className="border-b border-white/5 hover:bg-white/5 transition-colors"
             >
               <td className="py-4 px-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                    <Package className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <span className="font-medium">{pkg.name}</span>
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                  {pkg.image ? (
+                    <img
+                      src={pkg.image}
+                      alt={pkg.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package className="w-8 h-8 text-slate-600" />
+                    </div>
+                  )}
                 </div>
+              </td>
+              <td className="py-4 px-4">
+                <span className="font-medium">{pkg.name}</span>
               </td>
               <td className="py-4 px-4 text-slate-300">
                 <div className="max-w-md truncate">{pkg.description}</div>

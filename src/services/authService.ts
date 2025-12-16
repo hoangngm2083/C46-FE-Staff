@@ -27,6 +27,7 @@ const useAuthService = (params?: {
 
   const login = useQuery({
     queryKey: ["login", accountName],
+    retry: false,
     queryFn: () => {
       const tokens = localStorage.getItem("tokens");
       if (tokens) {

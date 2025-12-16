@@ -1,5 +1,6 @@
 import useStaffService from "@/services/staffService";
-import { X, Save } from "lucide-react";
+import { useFileService } from "@/services/fileService";
+import { X, Save, Upload } from "lucide-react";
 
 interface StaffFormModalProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export default function StaffFormModal({
   const { departments } = useStaffService({
     departmentsParams: { size: 1000 },
   });
+  const { uploadFile: uploadAvatar } = useFileService();
+  const { uploadFile: uploadSignature } = useFileService();
   if (!isOpen) return null;
 
   return (
@@ -175,28 +178,96 @@ export default function StaffFormModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              URL hình ảnh
-            </label>
-            <input
-              type="text"
-              value={formData.image}
-              onChange={(e) => onChange({ image: e.target.value })}
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            />
+            <label className="block text-sm font-medium mb-2">Avatar</label>
+            <div className="flex items-center space-x-4">
+              {formData.image && (
+                <img
+                  src={formData.image}
+                  alt="Avatar preview"
+                  className="w-16 h-16 rounded-full object-cover border border-white/10"
+                />
+              )}
+              <div className="flex-1">
+                <label
+                  className={`flex items-center justify-center w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors ${
+                    uploadAvatar.isPending
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  <Upload className="w-5 h-5 mr-2" />
+                  <span>
+                    {uploadAvatar.isPending ? "Đang tải lên..." : "Chọn ảnh"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        uploadAvatar.mutate(file, {
+                          onSuccess: (data) => {
+                            onChange({ image: data.url });
+                          },
+                        });
+                      }
+                    }}
+                    disabled={uploadAvatar.isPending}
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Chữ ký điện tử
-            </label>
-            <input
-              type="text"
-              value={formData.eSignature}
-              onChange={(e) => onChange({ eSignature: e.target.value })}
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            />
-          </div>
+          {formData.role !== 1 && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Chữ ký điện tử
+              </label>
+              <div className="flex items-center space-x-4">
+                {formData.eSignature && (
+                  <img
+                    src={formData.eSignature}
+                    alt="Signature preview"
+                    className="h-16 aspect-square object-contain bg-white/10 rounded-lg p-2 border border-white/10"
+                  />
+                )}
+                <div className="flex-1">
+                  <label
+                    className={`flex items-center justify-center w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors ${
+                      uploadSignature.isPending
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                  >
+                    <Upload className="w-5 h-5 mr-2" />
+                    <span>
+                      {uploadSignature.isPending
+                        ? "Đang tải lên..."
+                        : "Chọn chữ ký"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          uploadSignature.mutate(file, {
+                            onSuccess: (data) => {
+                              onChange({ eSignature: data.url });
+                            },
+                          });
+                        }
+                      }}
+                      disabled={uploadSignature.isPending}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex space-x-3 pt-4">
             <button

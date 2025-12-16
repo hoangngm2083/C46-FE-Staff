@@ -19,11 +19,15 @@ import {
 import useAuthService from "@/services/authService";
 import useBookingService from "@/services/bookingService";
 import { useExaminationFlowService } from "@/services/examinationFlowService";
+import { FaArrowLeft } from "react-icons/fa6";
+import CreateMedicalForm from "./CreateMedicalForm";
 
 type AppointmentFilterStatus = "ALL" | AppointmentState;
 
 export default function Appointments() {
   const { account } = useAuthService();
+  const [viewMode, setViewMode] = useState<"LIST" | "CREATE_FORM">("LIST");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filterStatus, setFilterStatus] =
@@ -156,6 +160,21 @@ export default function Appointments() {
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
+            {viewMode === "CREATE_FORM" ? (
+              <button
+                onClick={() => setViewMode("LIST")}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white mr-2"
+              >
+                <FaArrowLeft />
+              </button>
+            ) : (
+              <Link
+                to="/receptionist"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white mr-2"
+              >
+                <FaArrowLeft />
+              </Link>
+            )}
             <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center">
               <Calendar className="w-6 h-6 text-cyan-400" />
             </div>
@@ -167,12 +186,6 @@ export default function Appointments() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link
-              to="/receptionist"
-              className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              Quay lại
-            </Link>
             <LogoutButton />
           </div>
         </div>
@@ -180,205 +193,219 @@ export default function Appointments() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
-        {/* Actions Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div className="flex-1 w-full md:w-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm theo tên bệnh nhân, số điện thoại..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <select
-                value={filterStatus}
-                onChange={(e) =>
-                  setFilterStatus(e.target.value as AppointmentFilterStatus)
-                }
-                className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 appearance-none cursor-pointer"
-              >
-                <option className="text-black" value="ALL">
-                  Tất cả
-                </option>
-                <option className="text-black" value="CREATED">
-                  Đã tạo
-                </option>
-                <option className="text-black" value="SHOWED">
-                  Đã đến
-                </option>
-                <option className="text-black" value="CANCELED">
-                  Đã hủy
-                </option>
-                <option className="text-black" value="NO_SHOWED">
-                  Không đến
-                </option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={filterDateFrom}
-                onChange={(e) => setFilterDateFrom(e.target.value)}
-                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              />
-            </div>
-
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Tạo phiếu khám</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Appointments Table */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-          {appointments.isLoading || appointments.isRefetching ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
-            </div>
-          ) : !appointments.data?.content ||
-            appointments.data.content.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 text-lg">Không tìm thấy lịch hẹn</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
-                        Bệnh nhân
-                      </th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
-                        Ngày hẹn
-                      </th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
-                        Gói khám
-                      </th>
-                      <th className="text-left py-3 px-4 text-slate-400 font-medium">
-                        Trạng thái
-                      </th>
-                      <th className="text-right py-3 px-4 text-slate-400 font-medium">
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {appointments.data.content.map((apt) => (
-                      <tr
-                        key={apt.id}
-                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                              <UserCheck className="w-5 h-5 text-cyan-400" />
-                            </div>
-                            <span className="font-medium">
-                              {apt.patientName}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center space-x-2">
-                            <Clock className="w-4 h-4 text-slate-400" />
-                            <span className="text-slate-300">{apt.date}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-slate-300">
-                          {apt.medicalPackageName || "N/A"}
-                        </td>
-                        <td className="py-4 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                              apt.state
-                            )}`}
-                          >
-                            {getStatusLabel(apt.state)}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={() => {
-                                setSelectedAppointment(apt);
-                                setShowDetailsModal(true);
-                              }}
-                              className="p-2 bg-blue-500/20 rounded-lg hover:bg-blue-500/30 transition-colors"
-                              title="Xem chi tiết"
-                            >
-                              <Eye className="w-4 h-4 text-blue-400" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedAppointment(apt);
-                                setShowEditModal(true);
-                              }}
-                              className="p-2 bg-green-500/20 rounded-lg hover:bg-green-500/30 transition-colors"
-                              title="Cập nhật trạng thái"
-                            >
-                              <Edit className="w-4 h-4 text-green-400" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteAppointment(apt.id)}
-                              className="p-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
-                              title="Xóa"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-400" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        {viewMode === "CREATE_FORM" ? (
+          <CreateMedicalForm onSuccess={() => setViewMode("LIST")} />
+        ) : (
+          <>
+            {/* Actions Bar */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div className="flex-1 w-full md:w-auto">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm theo tên bệnh nhân, số điện thoại..."
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  />
+                </div>
               </div>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-slate-400">
-                  Hiển thị {appointments.data.content.length} /{" "}
-                  {appointments.data.total} lịch hẹn
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Trước
-                  </button>
-                  <span className="px-4 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg">
-                    {currentPage} / {appointments.data.totalPages || 1}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    disabled={
-                      currentPage >= (appointments.data.totalPages || 1)
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative">
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <select
+                    value={filterStatus}
+                    onChange={(e) =>
+                      setFilterStatus(e.target.value as AppointmentFilterStatus)
                     }
-                    className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="pl-10 pr-8 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 appearance-none cursor-pointer"
                   >
-                    Sau
-                  </button>
+                    <option className="text-black" value="ALL">
+                      Tất cả
+                    </option>
+                    <option className="text-black" value="CREATED">
+                      Đã tạo
+                    </option>
+                    <option className="text-black" value="SHOWED">
+                      Đã đến
+                    </option>
+                    <option className="text-black" value="CANCELED">
+                      Đã hủy
+                    </option>
+                    <option className="text-black" value="NO_SHOWED">
+                      Không đến
+                    </option>
+                  </select>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  />
+                </div>
+
+                <button
+                  onClick={() => setViewMode("CREATE_FORM")}
+                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Tạo phiếu khám</span>
+                </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+
+            {/* Appointments Table */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+              {appointments.isLoading || appointments.isRefetching ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+                </div>
+              ) : !appointments.data?.content ||
+                appointments.data.content.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-400 text-lg">
+                    Không tìm thấy lịch hẹn
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                            Bệnh nhân
+                          </th>
+                          <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                            Ngày hẹn
+                          </th>
+                          <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                            Gói khám
+                          </th>
+                          <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                            Trạng thái
+                          </th>
+                          <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                            Thao tác
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {appointments.data.content.map((apt) => (
+                          <tr
+                            key={apt.id}
+                            className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                          >
+                            <td className="py-4 px-4">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
+                                  <UserCheck className="w-5 h-5 text-cyan-400" />
+                                </div>
+                                <span className="font-medium">
+                                  {apt.patientName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center space-x-2">
+                                <Clock className="w-4 h-4 text-slate-400" />
+                                <span className="text-slate-300">
+                                  {apt.date}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-slate-300">
+                              {apt.medicalPackageName || "N/A"}
+                            </td>
+                            <td className="py-4 px-4">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                                  apt.state
+                                )}`}
+                              >
+                                {getStatusLabel(apt.state)}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center justify-end space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setSelectedAppointment(apt);
+                                    setShowDetailsModal(true);
+                                  }}
+                                  className="p-2 bg-blue-500/20 rounded-lg hover:bg-blue-500/30 transition-colors"
+                                  title="Xem chi tiết"
+                                >
+                                  <Eye className="w-4 h-4 text-blue-400" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedAppointment(apt);
+                                    setShowEditModal(true);
+                                  }}
+                                  className="p-2 bg-green-500/20 rounded-lg hover:bg-green-500/30 transition-colors"
+                                  title="Cập nhật trạng thái"
+                                >
+                                  <Edit className="w-4 h-4 text-green-400" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteAppointment(apt.id)
+                                  }
+                                  className="p-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
+                                  title="Xóa"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-400" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-slate-400">
+                      Hiển thị {appointments.data.content.length} /{" "}
+                      {appointments.data.total} lịch hẹn
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Trước
+                      </button>
+                      <span className="px-4 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg">
+                        {currentPage} / {appointments.data.totalPages || 1}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                        disabled={
+                          currentPage >= (appointments.data.totalPages || 1)
+                        }
+                        className="px-3 py-1 bg-white/5 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </main>
 
       {/* Create Appointment Modal */}

@@ -32,7 +32,11 @@ export default function Login() {
     setError("");
 
     try {
-      await login.refetch();
+      const { isError, error: loginError } = await login.refetch();
+      if (isError) {
+        throw loginError;
+      }
+
       const { data: accountData } = await account.refetch();
 
       const userRole = accountData?.role;
@@ -47,9 +51,13 @@ export default function Login() {
         navigate("/");
       }
       setIsLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       let errorMessage = "Failed to sign in. Please try again.";
+
+      if (error.status === 400 || error.response?.status === 400) {
+        errorMessage = "Tài khoản hoặc mật khẩu không đúng";
+      }
 
       setError(errorMessage);
       setIsLoading(false);

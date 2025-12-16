@@ -220,8 +220,16 @@ export default function Doctor() {
       <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-              <FaUserDoctor className="w-6 h-6 text-blue-400" />
+            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center overflow-hidden">
+              {staff.data?.image ? (
+                <img
+                  src={staff.data.image}
+                  alt={doctorName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <FaUserDoctor className="w-6 h-6 text-blue-400" />
+              )}
             </div>
             <div>
               <h1 className="text-xl font-bold">
