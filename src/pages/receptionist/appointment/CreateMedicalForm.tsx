@@ -26,9 +26,6 @@ export default function CreateMedicalForm({
     phone: "",
   });
   const [selectedPackageId, setSelectedPackageId] = useState("");
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
 
   const { searchPatients, createPatient } = usePatientService();
   const { data: patientsFound, isLoading: isSearching } =
@@ -57,7 +54,7 @@ export default function CreateMedicalForm({
         return;
       }
 
-      if (!selectedPackageId || !selectedDate) {
+      if (!selectedPackageId) {
         toast.error("Vui lòng chọn đầy đủ thông tin khám");
         return;
       }
