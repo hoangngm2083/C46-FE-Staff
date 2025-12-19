@@ -49,7 +49,7 @@ export default function CreateMedicalForm({
           return;
         }
         const newPatientId = await createPatient.mutateAsync(newPatientData);
-        patientId = newPatientId;
+        patientId = newPatientId.patientId;
       }
 
       if (!patientId) {
@@ -219,18 +219,6 @@ export default function CreateMedicalForm({
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-slate-400 mb-1">
-                Ngày khám
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
             </div>
           </div>
         </div>

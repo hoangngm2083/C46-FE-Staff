@@ -52,7 +52,7 @@ export const usePatientService = () => {
   const createPatient = useMutation({
     mutationFn: (data: CreatePatientRequest) =>
       axiosInstance
-        .post<string>("/patient", data)
+        .post<{ patientId: string }>("/patient", data)
         .then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
