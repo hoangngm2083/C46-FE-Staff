@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { axiosInstance } from "./axios-instance";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +9,20 @@ const useAuthService = (params?: {
   accountName?: string;
   password?: string;
 }) => {
+  const calculateInitialToken = () => {
+    const tokens = localStorage.getItem("tokens");
+    if (tokens) {
+      try {
+        return JSON.parse(tokens)?.token;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const [initialToken] = useState(calculateInitialToken);
+
   const { verificationId, code, accountName, password } = params ?? {};
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -63,7 +78,7 @@ const useAuthService = (params?: {
         .get<IAccount>("/auth/me")
         .then((res) => res.data);
     },
-    enabled: !!login.data?.token,
+    enabled: !!login.data?.token || !!initialToken,
   });
 
   const logout = () => {
