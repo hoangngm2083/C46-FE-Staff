@@ -30,7 +30,7 @@ import { Upload, Download } from "lucide-react";
 
 type TabType = "staff" | "department" | "medical-package" | "medical-service";
 
-export default function Admin() {
+export default function Manager() {
   const { account } = useAuthService();
   const staffId = account.data?.staffId;
   const { staff } = useStaffService({ staffId });

@@ -307,7 +307,7 @@ export default function Doctor() {
                         </span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 pb-2">
-                        <span className="text-slate-400">Số điện thoại:</span>
+                        <span className="text-slate-400">Email:</span>
                         <span className="text-white">
                           {currentQueueItem.medicalForm?.examination
                             ?.patientEmail || "N/A"}

@@ -149,6 +149,52 @@ const useMedicalPackageService = (params?: {
       .get<MedicalServiceDTO>(`/medical-service/${id}`)
       .then((res) => res.data);
 
+  const exportMedicalPackages = (params: GetMedicalPackagesParams) =>
+    axiosInstance
+      .get("/medical-package/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+
+  const importMedicalPackages = useMutation({
+    mutationFn: (csvUrl: string) =>
+      axiosInstance
+        .post<{ bulkId: string; status: string; message: string }>(
+          "/medical-package/import",
+          { csvUrl }
+        )
+        .then((res) => res.data),
+  });
+
+  const getMedicalPackageImportStatus = (bulkId: string) =>
+    axiosInstance
+      .get<BulkImportStatusView>(`/medical-package/import/${bulkId}`)
+      .then((res) => res.data);
+
+  const exportMedicalServices = (params: GetMedicalServicesParams) =>
+    axiosInstance
+      .get("/medical-service/export", {
+        params,
+        responseType: "blob",
+      })
+      .then((res) => res.data);
+
+  const importMedicalServices = useMutation({
+    mutationFn: (csvUrl: string) =>
+      axiosInstance
+        .post<{ bulkId: string; status: string; message: string }>(
+          "/medical-service/import",
+          { csvUrl }
+        )
+        .then((res) => res.data),
+  });
+
+  const getMedicalServiceImportStatus = (bulkId: string) =>
+    axiosInstance
+      .get<BulkImportStatusView>(`/medical-service/import/${bulkId}`)
+      .then((res) => res.data);
+
   return {
     // Queries
     medicalPackages,
@@ -156,6 +202,8 @@ const useMedicalPackageService = (params?: {
     medicalServices,
     medicalService,
     getMedicalService,
+    getMedicalPackageImportStatus,
+    getMedicalServiceImportStatus,
     // Mutations
     createMedicalPackage,
     createMedicalService,
@@ -164,6 +212,11 @@ const useMedicalPackageService = (params?: {
     deleteMedicalPackage,
     updateMedicalService,
     deleteMedicalService,
+    importMedicalPackages,
+    importMedicalServices,
+    // Others
+    exportMedicalPackages,
+    exportMedicalServices,
   };
 };
 

@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import BillingDashboard from "./pages/receptionist/billing/BillingDashboard";
 import PaymentResult from "./pages/receptionist/billing/PaymentResult";
+import Manager from "./pages/manager/Manager";
 
 const queryClient = new QueryClient();
 function App() {
@@ -24,6 +25,15 @@ function App() {
           element={
             <ProtectedRoute requiredRole="ADMIN">
               <Admin />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/manager"
+          element={
+            <ProtectedRoute requiredRole="MANAGER">
+              <Manager />
             </ProtectedRoute>
           }
         />

@@ -44,6 +44,17 @@ declare global {
     formTemplate: string;
   }
 
+  interface BulkImportStatusView {
+    bulkId: string;
+    entityType: string;
+    importFileUrl: string;
+    status: string;
+    totalRows?: number;
+    successfulRows?: number;
+    failedRows?: number;
+    resultCsvUrl?: string;
+  }
+
   interface MedicalServiceDTO {
     medicalServiceId: string;
     name: string;
